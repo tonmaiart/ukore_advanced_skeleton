@@ -70424,6 +70424,20 @@ for ($i=0;$i<size($controlSetMembers);$i++)
 		continue;
 	}
 
+//Pre Rebuild alwaysDrawOnTop (always preserved, regardless of Keep-options)
+string $drawOnTopCmds[];
+for ($i=0;$i<size($controlSetMembers);$i++)
+	{
+	$tempString=`listRelatives -s $controlSetMembers[$i]`;
+	for ($z=0;$z<size($tempString);$z++)
+		{
+		if (!`attributeExists alwaysDrawOnTop $tempString[$z]`)
+			continue;
+		if (`getAttr ($tempString[$z]+".alwaysDrawOnTop")`)
+			$drawOnTopCmds[size($drawOnTopCmds)]="setAttr "+$tempString[$z]+".alwaysDrawOnTop 1;";
+		}
+	}
+
 
 //Pre Rebuild Disable expressions to avoid warnings
 $tempString=`ls -type expression`;
@@ -70569,6 +70583,10 @@ for ($i=0;$i<size($controlSetMembers);$i++)
 			delete tempCurveForRefresh;
 		}
 	}
+
+//Post Rebuild alwaysDrawOnTop
+for ($cmd in $drawOnTopCmds)
+	if (catchQuiet (`eval ($cmd)`)) warning ("Failed: "+$cmd+"\n");
 
 //reset bindPose
 string $bindPose;
